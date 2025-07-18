@@ -76,6 +76,11 @@ def format_task(task: Dict) -> str:
     if task.get('content'):
         formatted += f"\nContent:\n{task.get('content')}\n"
     
+    # Add tags if available
+    tags = task.get('tags', [])
+    if tags:
+        formatted += f"\nTags: {', '.join(tags)}\n"
+    
     # Add subtasks if available
     items = task.get('items', [])
     if items:
@@ -218,7 +223,8 @@ async def create_task(
     content: str = None, 
     start_date: str = None, 
     due_date: str = None, 
-    priority: int = 0
+    priority: int = 0,
+    tags: List[str] = None
 ) -> str:
     """
     Create a new task in TickTick.
@@ -230,6 +236,7 @@ async def create_task(
         start_date: Start date in ISO format YYYY-MM-DDThh:mm:ss+0000 (optional)
         due_date: Due date in ISO format YYYY-MM-DDThh:mm:ss+0000 (optional)
         priority: Priority level (0: None, 1: Low, 3: Medium, 5: High) (optional)
+        tags: List of tags to add to the task (optional)
     """
     if not ticktick:
         if not initialize_client():
@@ -255,7 +262,8 @@ async def create_task(
             content=content,
             start_date=start_date,
             due_date=due_date,
-            priority=priority
+            priority=priority,
+            tags=tags
         )
         
         if 'error' in task:
@@ -274,7 +282,8 @@ async def update_task(
     content: str = None,
     start_date: str = None,
     due_date: str = None,
-    priority: int = None
+    priority: int = None,
+    tags: List[str] = None
 ) -> str:
     """
     Update an existing task in TickTick.
@@ -287,6 +296,7 @@ async def update_task(
         start_date: New start date in ISO format YYYY-MM-DDThh:mm:ss+0000 (optional)
         due_date: New due date in ISO format YYYY-MM-DDThh:mm:ss+0000 (optional)
         priority: New priority level (0: None, 1: Low, 3: Medium, 5: High) (optional)
+        tags: New list of tags for the task (optional)
     """
     if not ticktick:
         if not initialize_client():
@@ -313,7 +323,8 @@ async def update_task(
             content=content,
             start_date=start_date,
             due_date=due_date,
-            priority=priority
+            priority=priority,
+            tags=tags
         )
         
         if 'error' in task:
