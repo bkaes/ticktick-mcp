@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ticktick-mcp__create_task",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "mcp__ticktick-mcp__get_task",
+      "Bash(source:*)",
+      "Bash(python test:*)",
+      "mcp__ticktick-mcp__delete_project",
+      "mcp__ticktick-mcp__create_project",
+      "Bash(python:*)",
+      "Bash(ls:*)",
+      "Bash(kill:*)",
+      "Bash(cat:*)",
+      "Bash(cp:*)",
+      "mcp__ticktick-mcp__create_checklist",
+      "mcp__ticktick-mcp__get_projects",
+      "mcp__ticktick-mcp__get_project_tasks",
+      "Bash(uv run:*)",
+      "mcp__ticktick-mcp__create_basic_task",
+      "mcp__ticktick-mcp__create_subtask"
+    ],
+    "deny": []
+  }
+}

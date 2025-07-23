@@ -1,0 +1,273 @@
+{
+  "project": {
+    "id": "687708d48f0820d10f835faa",
+    "name": "\ud83d\udcbc Work & Projects",
+    "color": "#5992F8",
+    "sortOrder": 6148915515870238038,
+    "viewMode": "list",
+    "kind": "TASK"
+  },
+  "tasks": [
+    {
+      "id": "68770b078f0820d10f838d84",
+      "projectId": "687708d48f0820d10f835faa",
+      "sortOrder": -1099511627776,
+      "title": "Docker Persistent file storage",
+      "content": "\n2. Fetching Documents",
+      "desc": "",
+      "timeZone": "America/New_York",
+      "isAllDay": false,
+      "priority": 0,
+      "status": 0,
+      "tags": [
+        "development",
+        "work",
+        "recurring",
+        "docker"
+      ],
+      "columnId": "687fd6db6596d13515599922",
+      "etag": "3ytqsj75",
+      "kind": "TEXT"
+    },
+    {
+      "id": "687865278f08de522fc8dc2f",
+      "projectId": "687708d48f0820d10f835faa",
+      "sortOrder": -6597069766656,
+      "title": "Connect with Jibson, Dan and team about branching strategy",
+      "content": "Research the best way to branch and merge instead of cherrypicking",
+      "desc": "",
+      "timeZone": "America/New_York",
+      "isAllDay": false,
+      "priority": 0,
+      "status": 0,
+      "columnId": "687fd6db6596d13515599922",
+      "etag": "1yqlconh",
+      "kind": "TEXT"
+    },
+    {
+      "id": "687fe14d8f08b1a744268076",
+      "projectId": "687708d48f0820d10f835faa",
+      "sortOrder": -25288767438848,
+      "title": "Debug Checklist Test",
+      "content": "",
+      "desc": "This is a checklist created for debugging",
+      "timeZone": "America/New_York",
+      "isAllDay": false,
+      "priority": 0,
+      "completedTime": "2025-07-22T19:09:21.000+0000",
+      "status": 0,
+      "items": [
+        {
+          "id": "687fe14d8f08b1a744268077",
+          "status": 0,
+          "title": "First checklist item",
+          "sortOrder": 0,
+          "isAllDay": false,
+          "timeZone": "America/New_York"
+        },
+        {
+          "id": "687fe14d8f08b1a744268078",
+          "status": 0,
+          "title": "Second checklist item",
+          "sortOrder": 0,
+          "isAllDay": false,
+          "timeZone": "America/New_York"
+        },
+        {
+          "id": "687fe14d8f08b1a744268079",
+          "status": 1,
+          "title": "Third item (completed)",
+          "sortOrder": 0,
+          "isAllDay": false,
+          "timeZone": "America/New_York"
+        }
+      ],
+      "etag": "1pvl151h",
+      "kind": "CHECKLIST"
+    },
+    {
+      "id": "687fe5058f08b1a744273d27",
+      "projectId": "687708d48f0820d10f835faa",
+      "sortOrder": -26388279066624,
+      "title": "Checklist Function Test",
+      "desc": "Testing the dedicated create_checklist function",
+      "timeZone": "America/New_York",
+      "isAllDay": false,
+      "priority": 5,
+      "status": 0,
+      "items": [
+        {
+          "id": "687fe5058f08b1a744273d28",
+          "status": 0,
+          "title": "First item from dedicated function",
+          "sortOrder": 0,
+          "isAllDay": false,
+          "timeZone": "America/New_York"
+        },
+        {
+          "id": "687fe5058f08b1a744273d29",
+          "status": 0,
+          "title": "Second item from dedicated function",
+          "sortOrder": 0,
+          "isAllDay": false,
+          "timeZone": "America/New_York"
+        },
+        {
+          "id": "687fe5058f08b1a744273d2a",
+          "status": 2,
+          "title": "This one is already done",
+          "sortOrder": 0,
+          "isAllDay": false,
+          "timeZone": "America/New_York"
+        },
+        {
+          "id": "687fe5058f08b1a744273d2b",
+          "status": 0,
+          "title": "Fourth item",
+          "sortOrder": 0,
+          "isAllDay": false,
+          "timeZone": "America/New_York"
+        }
+      ],
+      "tags": [
+        "test",
+        "working",
+        "checklist-function"
+      ],
+      "etag": "1wmop778",
+      "kind": "CHECKLIST"
+    },
+    {
+      "id": "687fe50e8f08242e3d5ad423",
+      "projectId": "687708d48f0820d10f835faa",
+      "sortOrder": -27487790694400,
+      "title": "Create Task Checklist Test",
+      "desc": "Testing create_task with desc and items",
+      "timeZone": "America/New_York",
+      "isAllDay": false,
+      "priority": 3,
+      "status": 0,
+      "items": [
+        {
+          "id": "687fe50e8f08242e3d5ad424",
+          "status": 0,
+          "title": "Item from create_task",
+          "sortOrder": 0,
+          "isAllDay": false,
+          "timeZone": "America/New_York"
+        },
+        {
+          "id": "687fe50e8f08242e3d5ad425",
+          "status": 0,
+          "title": "Another item",
+          "sortOrder": 0,
+          "isAllDay": false,
+          "timeZone": "America/New_York"
+        },
+        {
+          "id": "687fe50e8f08242e3d5ad426",
+          "status": 2,
+          "title": "Completed item",
+          "sortOrder": 0,
+          "isAllDay": false,
+          "timeZone": "America/New_York"
+        }
+      ],
+      "tags": [
+        "create-task",
+        "checklist"
+      ],
+      "etag": "f7tu8g51",
+      "kind": "CHECKLIST"
+    },
+    {
+      "id": "687fe5418f08b1a74427485a",
+      "projectId": "687708d48f0820d10f835faa",
+      "sortOrder": -28587302322176,
+      "title": "Parent Task Test",
+      "content": "This is a parent task that should have subtasks",
+      "desc": "",
+      "timeZone": "America/New_York",
+      "isAllDay": false,
+      "priority": 3,
+      "status": 0,
+      "tags": [
+        "parent",
+        "subtask-test"
+      ],
+      "childIds": [
+        "687fe56f51c751351559b621"
+      ],
+      "etag": "ldva8wat",
+      "kind": "TEXT"
+    },
+    {
+      "id": "687fe54b8f08e86a69ad9ce8",
+      "projectId": "687708d48f0820d10f835faa",
+      "sortOrder": -29686813949952,
+      "title": "Subtask 1: First subtask",
+      "content": "This should appear as a subtask of Parent Task Test",
+      "desc": "",
+      "timeZone": "America/New_York",
+      "isAllDay": false,
+      "priority": 1,
+      "status": 0,
+      "columnId": "687fd6db6596d13515599922",
+      "etag": "4ghdw02q",
+      "kind": "TEXT"
+    },
+    {
+      "id": "687fe5528f08242e3d5adb0a",
+      "projectId": "687708d48f0820d10f835faa",
+      "sortOrder": -30786325577728,
+      "title": "Subtask 2: Second subtask",
+      "content": "Another subtask for the parent",
+      "timeZone": "America/New_York",
+      "isAllDay": false,
+      "priority": 1,
+      "status": 0,
+      "tags": [],
+      "etag": "po7yk0zc",
+      "kind": "TEXT"
+    },
+    {
+      "id": "687fe56f51c751351559b621",
+      "projectId": "687708d48f0820d10f835faa",
+      "sortOrder": -549755813888,
+      "title": "This is actually a sub task",
+      "content": "",
+      "desc": "",
+      "timeZone": "America/New_York",
+      "isAllDay": false,
+      "priority": 0,
+      "status": 0,
+      "tags": [],
+      "parentId": "687fe5418f08b1a74427485a",
+      "etag": "4nlb4le1",
+      "kind": "TEXT"
+    },
+    {
+      "id": "687fe68b8f08b1a744278487",
+      "projectId": "687708d48f0820d10f835faa",
+      "sortOrder": -31885837205504,
+      "title": "API Created Subtask - 15:29:15",
+      "content": "This subtask was created via API with parentId",
+      "timeZone": "America/New_York",
+      "isAllDay": false,
+      "priority": 1,
+      "status": 0,
+      "tags": [],
+      "parentId": "687fe5418f08b1a74427485a",
+      "etag": "qnr32whf",
+      "kind": "TEXT"
+    }
+  ],
+  "columns": [
+    {
+      "id": "687fd6db6596d13515599922",
+      "projectId": "687708d48f0820d10f835faa",
+      "name": "Not Sectioned",
+      "sortOrder": 0
+    }
+  ]
+}

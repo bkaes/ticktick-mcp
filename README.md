@@ -9,6 +9,8 @@ A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for Ti
 - 🔄 Update existing task details (title, content, dates, priority)
 - ✅ Mark tasks as complete
 - 🗑️ Delete tasks and projects
+- 📝 Create and manage subtasks within tasks
+- 🏷️ Add and manage tags on tasks
 - 🔄 Full integration with TickTick's open API
 - 🔌 Seamless integration with Claude and other MCP clients
 
@@ -133,29 +135,103 @@ Once connected, you'll see the TickTick MCP server tools available in Claude, in
 
 ## Available MCP Tools
 
+### Project Management
 | Tool | Description | Parameters |
 |------|-------------|------------|
 | `get_projects` | List all your TickTick projects | None |
 | `get_project` | Get details about a specific project | `project_id` |
-| `get_project_tasks` | List all tasks in a project | `project_id` |
-| `get_task` | Get details about a specific task | `project_id`, `task_id` |
-| `create_task` | Create a new task | `title`, `project_id`, `content` (optional), `start_date` (optional), `due_date` (optional), `priority` (optional) |
-| `update_task` | Update an existing task | `task_id`, `project_id`, `title` (optional), `content` (optional), `start_date` (optional), `due_date` (optional), `priority` (optional) |
-| `complete_task` | Mark a task as complete | `project_id`, `task_id` |
-| `delete_task` | Delete a task | `project_id`, `task_id` |
 | `create_project` | Create a new project | `name`, `color` (optional), `view_mode` (optional) |
 | `delete_project` | Delete a project | `project_id` |
+
+### Task Management
+| Tool | Description | Parameters |
+|------|-------------|------------|
+| `get_project_tasks` | List all tasks in a project | `project_id` |
+| `get_task` | Get details about a specific task | `project_id`, `task_id` |
+| `create_task` | Create a new task or checklist (general purpose) | `title`, `project_id`, `content` (optional for tasks), `desc` (required for checklists), `start_date` (optional), `due_date` (optional), `priority` (optional), `tags` (optional), `items` (optional), `parent_id` (optional) |
+| `update_task` | Update an existing task | `task_id`, `project_id`, `title` (optional), `content` (optional), `desc` (optional), `start_date` (optional), `due_date` (optional), `priority` (optional), `tags` (optional), `items` (optional) |
+| `complete_task` | Mark a task as complete | `project_id`, `task_id` |
+| `delete_task` | Delete a task | `project_id`, `task_id` |
+
+### Specialized Task Creation Tools (Recommended)
+These tools make task creation more explicit and less error-prone:
+
+| Tool | Description | Parameters |
+|------|-------------|------------|
+| `create_basic_task` | Create a simple task (no subtasks/checklists) | `title`, `project_id`, `content` (optional), `start_date` (optional), `due_date` (optional), `priority` (optional), `tags` (optional) |
+| `create_subtask` | Create a subtask under an existing task | `title`, `project_id`, `parent_task_id` (required), `content` (optional), `start_date` (optional), `due_date` (optional), `priority` (optional), `tags` (optional) |
+| `create_checklist_task` | Create a task with checklist items | `title`, `project_id`, `items` (required - list of strings), `priority` (optional), `tags` (optional) |
+
+## Working with Checklists and Tags
+
+### Creating Checklists with Items
+To create a checklist with visible items in TickTick, use `create_task` with these CRITICAL requirements:
+
+1. **MUST use `desc` field** for the checklist description
+2. **MUST provide `items` array** with the checklist items
+3. **DO NOT use `content` field** - if you include content, the checklist won't work!
+
+#### Correct way to create a checklist:
+```python
+await create_task(
+    title="Shopping List",
+    project_id="your_project_id",
+    desc="Weekly groceries",  # Required - this makes it a checklist
+    items=[
+        {"title": "Milk", "status": 0},
+        {"title": "Bread", "status": 0},
+        {"title": "Eggs", "status": 2}  # Already completed
+    ],
+    priority=3,
+    tags=["shopping", "weekly"]
+)
+```
+
+#### What NOT to do:
+```python
+# WRONG - This won't create a proper checklist!
+await create_task(
+    title="Shopping List",
+    content="Weekly groceries",  # NO! Using content breaks checklists
+    items=[...]  # Items won't be visible
+)
+```
+
+### Important Notes on Checklists
+- **Status values**: Use `0` for incomplete, `2` for complete (NOT 1!)
+- **IDs**: TickTick automatically generates item IDs if not provided
+- **The `desc` field is critical**: Using `content` instead of `desc` will create a regular task where items aren't visible
+- **Regular tasks vs Checklists**: Regular tasks use `content` field, checklists use `desc` field
+
+### Tags
+Tags can be added to tasks to help with organization. Simply provide an array of tag names:
+```json
+{
+  "tags": ["urgent", "personal", "health"]
+}
+```
 
 ## Example Prompts for Claude
 
 Here are some example prompts to use with Claude after connecting the TickTick MCP server:
 
+### Basic Commands
 - "Show me all my TickTick projects"
-- "Create a new task called 'Finish MCP server documentation' in my work project with high priority"
 - "List all tasks in my personal project"
 - "Mark the task 'Buy groceries' as complete"
 - "Create a new project called 'Vacation Planning' with a blue color"
 - "When is my next deadline in TickTick?"
+
+### Using Specialized Tools (Recommended)
+- "Create a basic task called 'Finish MCP server documentation' in my work project with high priority"
+- "Create a subtask 'Review code changes' under the task 'Complete PR #123'"
+- "Create a checklist called 'Shopping List' with items: Milk, Bread, Eggs, Butter"
+- "Make a morning routine checklist with items: Wake up at 7am, Exercise, Shower, Breakfast"
+- "Add a subtask 'Book hotel' to my vacation planning task"
+
+### Working with Tags
+- "Create a task 'Prepare presentation' with tags 'urgent' and 'work'"
+- "Add tags 'personal' and 'health' to my doctor appointment task"
 
 ## Development
 

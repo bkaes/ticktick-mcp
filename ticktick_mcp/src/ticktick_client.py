@@ -3,9 +3,12 @@ import json
 import base64
 import requests
 import logging
+import random
+import string
 from pathlib import Path
 from dotenv import load_dotenv
 from typing import Dict, List, Any, Optional, Tuple
+from datetime import datetime, timezone
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -143,6 +146,11 @@ class TickTickClient:
         """
         url = f"{self.base_url}{endpoint}"
         
+        # Log the request details
+        logger.info(f"Making {method} request to: {url}")
+        if data:
+            logger.info(f"Request data: {json.dumps(data, indent=2)}")
+        
         try:
             # Make the request
             if method == "GET":
@@ -167,6 +175,16 @@ class TickTickClient:
                         response = requests.post(url, headers=self.headers, json=data)
                     elif method == "DELETE":
                         response = requests.delete(url, headers=self.headers)
+            
+            # Log response details
+            logger.info(f"Response status code: {response.status_code}")
+            logger.info(f"Response headers: {dict(response.headers)}")
+            
+            # Log response body if not too large
+            if response.text and len(response.text) < 5000:
+                logger.info(f"Response body: {response.text}")
+            elif response.text:
+                logger.info(f"Response body (truncated): {response.text[:1000]}...")
             
             # Raise an exception for 4xx/5xx status codes
             response.raise_for_status()
@@ -228,9 +246,14 @@ class TickTickClient:
         return self._make_request("GET", f"/project/{project_id}/task/{task_id}")
     
     def create_task(self, title: str, project_id: str, content: str = None, 
-                   start_date: str = None, due_date: str = None, 
-                   priority: int = 0, is_all_day: bool = False, tags: List[str] = None) -> Dict:
-        """Creates a new task."""
+                   desc: str = None, start_date: str = None, due_date: str = None, 
+                   priority: int = 0, is_all_day: bool = False, tags: List[str] = None,
+                   items: List[Dict[str, Any]] = None, kind: str = None, parent_id: str = None) -> Dict:
+        """Creates a new task.
+        
+        Args:
+            parent_id: ID of the parent task to create this as a subtask (optional)
+        """
         data = {
             "title": title,
             "projectId": project_id
@@ -238,22 +261,31 @@ class TickTickClient:
         
         if content:
             data["content"] = content
+        if desc:
+            data["desc"] = desc
         if start_date:
             data["startDate"] = start_date
         if due_date:
             data["dueDate"] = due_date
         if priority is not None:
             data["priority"] = priority
-        if is_all_day is not None:
-            data["isAllDay"] = is_all_day
+        # Always set isAllDay (important for checklists)
+        data["isAllDay"] = is_all_day
         if tags is not None:
             data["tags"] = tags
+        if items is not None:
+            data["items"] = items
+        if kind is not None:
+            data["kind"] = kind
+        if parent_id is not None:
+            data["parentId"] = parent_id
             
         return self._make_request("POST", "/task", data)
     
     def update_task(self, task_id: str, project_id: str, title: str = None, 
-                   content: str = None, priority: int = None, 
-                   start_date: str = None, due_date: str = None, tags: List[str] = None) -> Dict:
+                   content: str = None, desc: str = None, priority: int = None, 
+                   start_date: str = None, due_date: str = None, tags: List[str] = None,
+                   items: List[Dict[str, Any]] = None) -> Dict:
         """Updates an existing task."""
         data = {
             "id": task_id,
@@ -264,6 +296,8 @@ class TickTickClient:
             data["title"] = title
         if content:
             data["content"] = content
+        if desc:
+            data["desc"] = desc
         if priority is not None:
             data["priority"] = priority
         if start_date:
@@ -272,6 +306,8 @@ class TickTickClient:
             data["dueDate"] = due_date
         if tags is not None:
             data["tags"] = tags
+        if items is not None:
+            data["items"] = items
             
         return self._make_request("POST", f"/task/{task_id}", data)
     

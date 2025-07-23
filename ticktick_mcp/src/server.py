@@ -10,8 +10,11 @@ from dotenv import load_dotenv
 
 from .ticktick_client import TickTickClient
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
+# Set up logging with more detail
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 # Create FastMCP server
@@ -76,18 +79,22 @@ def format_task(task: Dict) -> str:
     if task.get('content'):
         formatted += f"\nContent:\n{task.get('content')}\n"
     
+    # Add desc if available (for checklist tasks)
+    if task.get('desc'):
+        formatted += f"\nDescription:\n{task.get('desc')}\n"
+    
+    # Add items if available (checklist items/subtasks)
+    items = task.get('items', [])
+    if items:
+        formatted += f"\nChecklist Items ({len(items)}):\n"
+        for i, item in enumerate(items, 1):
+            status_icon = "✓" if item.get('status', 0) == 2 else "○"
+            formatted += f"  {status_icon} {item.get('title', 'Untitled item')}\n"
+    
     # Add tags if available
     tags = task.get('tags', [])
     if tags:
         formatted += f"\nTags: {', '.join(tags)}\n"
-    
-    # Add subtasks if available
-    items = task.get('items', [])
-    if items:
-        formatted += f"\nSubtasks ({len(items)}):\n"
-        for i, item in enumerate(items, 1):
-            status = "✓" if item.get('status') == 1 else "□"
-            formatted += f"{i}. [{status}] {item.get('title', 'No title')}\n"
     
     return formatted
 
@@ -220,11 +227,15 @@ async def get_task(project_id: str, task_id: str) -> str:
 async def create_task(
     title: str, 
     project_id: str, 
-    content: str = None, 
+    content: str = None,
+    desc: str = None, 
     start_date: str = None, 
     due_date: str = None, 
     priority: int = 0,
-    tags: List[str] = None
+    tags: List[str] = None,
+    items: List[Dict[str, Any]] = None,
+    kind: str = None,
+    parent_id: str = None
 ) -> str:
     """
     Create a new task in TickTick.
@@ -233,10 +244,14 @@ async def create_task(
         title: Task title
         project_id: ID of the project to add the task to
         content: Task description/content (optional)
+        desc: Description of checklist (optional) - use this WITH items to create a checklist (do NOT use content)
         start_date: Start date in ISO format YYYY-MM-DDThh:mm:ss+0000 (optional)
         due_date: Due date in ISO format YYYY-MM-DDThh:mm:ss+0000 (optional)
         priority: Priority level (0: None, 1: Low, 3: Medium, 5: High) (optional)
         tags: List of tags to add to the task (optional)
+        items: List of checklist items, each with 'title' and optional 'status' (0: incomplete, 2: complete) (optional)
+        kind: Task type - "CHECKLIST" for checklist tasks (optional)
+        parent_id: ID of the parent task to create this as a subtask (optional)
     """
     if not ticktick:
         if not initialize_client():
@@ -256,15 +271,37 @@ async def create_task(
                 except ValueError:
                     return f"Invalid {date_name} format. Use ISO format: YYYY-MM-DDThh:mm:ss+0000"
         
-        task = ticktick.create_task(
-            title=title,
-            project_id=project_id,
-            content=content,
-            start_date=start_date,
-            due_date=due_date,
-            priority=priority,
-            tags=tags
-        )
+        # For checklists, we should use desc and NOT content
+        if desc and items:
+            # This is a checklist - don't include content
+            task = ticktick.create_task(
+                title=title,
+                project_id=project_id,
+                desc=desc,
+                start_date=start_date,
+                due_date=due_date,
+                priority=priority,
+                tags=tags,
+                items=items,
+                parent_id=parent_id,
+                is_all_day=False  # Important for checklists
+            )
+        else:
+            # Regular task
+            task = ticktick.create_task(
+                title=title,
+                project_id=project_id,
+                content=content,
+                desc=desc,
+                start_date=start_date,
+                due_date=due_date,
+                priority=priority,
+                tags=tags,
+                items=items,
+                kind=kind,
+                parent_id=parent_id,
+                is_all_day=False
+            )
         
         if 'error' in task:
             return f"Error creating task: {task['error']}"
@@ -275,15 +312,161 @@ async def create_task(
         return f"Error creating task: {str(e)}"
 
 @mcp.tool()
+async def create_checklist(
+    title: str,
+    project_id: str,
+    desc: str,
+    items: List[Dict[str, Any]],
+    priority: int = 0,
+    tags: List[str] = None
+) -> str:
+    """
+    Create a checklist task with visible items in TickTick.
+    
+    This is a specialized function for creating checklists that ensures all items
+    are visible in the TickTick UI.
+    
+    Args:
+        title: Checklist title
+        project_id: ID of the project to add the checklist to
+        desc: Description of the checklist (required for checklists)
+        items: List of checklist items, each with 'title' and optional 'status' (0: incomplete, 2: complete)
+        priority: Priority level (0: None, 1: Low, 3: Medium, 5: High) (optional)
+        tags: List of tags to add to the checklist (optional)
+    """
+    if not ticktick:
+        if not initialize_client():
+            return "Failed to initialize TickTick client. Please check your API credentials."
+    
+    try:
+        # Create the checklist - use desc instead of content for checklists
+        task = ticktick.create_task(
+            title=title,
+            project_id=project_id,
+            desc=desc,  # desc makes it a checklist
+            priority=priority,
+            tags=tags,
+            items=items,
+            is_all_day=False  # Important for checklists
+        )
+        
+        if 'error' in task:
+            return f"Error creating checklist: {task['error']}"
+        
+        return f"Checklist created successfully:\n\n" + format_task(task)
+    except Exception as e:
+        logger.error(f"Error in create_checklist: {e}")
+        return f"Error creating checklist: {str(e)}"
+
+@mcp.tool()
+async def create_basic_task(
+    title: str, 
+    project_id: str, 
+    content: str = None,
+    start_date: str = None, 
+    due_date: str = None, 
+    priority: int = 0,
+    tags: List[str] = None
+) -> str:
+    """
+    Create a basic task (no subtasks or checklists).
+    
+    Args:
+        title: Task title
+        project_id: ID of the project to add the task to
+        content: Task description/content (optional)
+        start_date: Start date in ISO format YYYY-MM-DDThh:mm:ss+0000 (optional)
+        due_date: Due date in ISO format YYYY-MM-DDThh:mm:ss+0000 (optional)
+        priority: Priority level (0: None, 1: Low, 3: Medium, 5: High) (optional)
+        tags: List of tags to add to the task (optional)
+    """
+    return await create_task(
+        title=title,
+        project_id=project_id,
+        content=content,
+        start_date=start_date,
+        due_date=due_date,
+        priority=priority,
+        tags=tags
+    )
+
+@mcp.tool()
+async def create_subtask(
+    title: str,
+    project_id: str,
+    parent_task_id: str,
+    content: str = None,
+    start_date: str = None,
+    due_date: str = None,
+    priority: int = 0,
+    tags: List[str] = None
+) -> str:
+    """
+    Create a subtask under an existing task.
+    
+    Args:
+        title: Task title
+        project_id: ID of the project
+        parent_task_id: ID of the parent task (required)
+        content: Task description/content (optional)
+        start_date: Start date in ISO format YYYY-MM-DDThh:mm:ss+0000 (optional)
+        due_date: Due date in ISO format YYYY-MM-DDThh:mm:ss+0000 (optional)
+        priority: Priority level (0: None, 1: Low, 3: Medium, 5: High) (optional)
+        tags: List of tags to add to the task (optional)
+    """
+    return await create_task(
+        title=title,
+        project_id=project_id,
+        parent_id=parent_task_id,
+        content=content,
+        start_date=start_date,
+        due_date=due_date,
+        priority=priority,
+        tags=tags
+    )
+
+@mcp.tool()
+async def create_checklist_task(
+    title: str,
+    project_id: str,
+    items: List[str],
+    priority: int = 0,
+    tags: List[str] = None
+) -> str:
+    """
+    Create a task with a checklist. Accepts a simple list of strings for checklist items.
+    
+    Args:
+        title: Task title
+        project_id: ID of the project to add the checklist to
+        items: List of checklist item titles (as strings)
+        priority: Priority level (0: None, 1: Low, 3: Medium, 5: High) (optional)
+        tags: List of tags to add to the checklist (optional)
+    """
+    # Convert simple string list to proper item format
+    formatted_items = [{"title": item, "status": 0} for item in items]
+    
+    return await create_checklist(
+        title=title,
+        project_id=project_id,
+        desc=title,  # Use title as description for consistency
+        items=formatted_items,
+        priority=priority,
+        tags=tags
+    )
+
+@mcp.tool()
 async def update_task(
     task_id: str,
     project_id: str,
     title: str = None,
     content: str = None,
+    desc: str = None,
     start_date: str = None,
     due_date: str = None,
     priority: int = None,
-    tags: List[str] = None
+    tags: List[str] = None,
+    items: List[Dict[str, Any]] = None
 ) -> str:
     """
     Update an existing task in TickTick.
@@ -293,10 +476,12 @@ async def update_task(
         project_id: ID of the project the task belongs to
         title: New task title (optional)
         content: New task description/content (optional)
+        desc: New checklist description (optional) - use this for checklist tasks
         start_date: New start date in ISO format YYYY-MM-DDThh:mm:ss+0000 (optional)
         due_date: New due date in ISO format YYYY-MM-DDThh:mm:ss+0000 (optional)
         priority: New priority level (0: None, 1: Low, 3: Medium, 5: High) (optional)
         tags: New list of tags for the task (optional)
+        items: New list of checklist items, each with 'title' and optional 'status' (0: incomplete, 2: complete) (optional)
     """
     if not ticktick:
         if not initialize_client():
@@ -321,10 +506,12 @@ async def update_task(
             project_id=project_id,
             title=title,
             content=content,
+            desc=desc,
             start_date=start_date,
             due_date=due_date,
             priority=priority,
-            tags=tags
+            tags=tags,
+            items=items
         )
         
         if 'error' in task:
